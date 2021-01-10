@@ -32,6 +32,7 @@
     "comma-dangle": "off",
     "jsx-control-statements/jsx-use-if-tag": 0,
     "jsx-control-statements/jsx-jcs-no-undef": "off",
-    "standard/no-callback-literal": "off"
+    "standard/no-callback-literal": "off",
+    "react/prop-types": "off"
   }
 }

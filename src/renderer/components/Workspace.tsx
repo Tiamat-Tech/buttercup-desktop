@@ -1,15 +1,25 @@
 import { Credentials, VaultSource, VaultSourceStatus } from 'buttercup/web';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import styled from 'styled-components';
 import { DatasourceType, useManager } from '../services/VaultManager';
 import Vault from './Vault';
 
+const TemporarySidebar = styled.div`
+  width: 100px;
+  padding-top: 100px;
+`;
+
+const Wrapper = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+`;
+
 const Workspace = () => {
-  const [selectedSource, setSelectedSource] = useState<VaultSource | null>(
-    null
-  );
+  const [selectedSourceIndex, setSelectedSourceIndex] = useState<number>();
   const { sources, addSource } = useManager();
 
-  const handleClick = () => {
+  const handleTestAddButtonClick = () => {
     addSource({
       type: DatasourceType.LocalStorage,
       name: 'Sallar',
@@ -18,27 +28,37 @@ const Workspace = () => {
     });
   };
 
-  useEffect(() => {
-    if (sources.length === 0) {
-      return;
-    }
-    if (sources[0].status === VaultSourceStatus.Locked) {
-      sources[0].unlock(Credentials.fromPassword('sallar'));
-    } else if (sources[0].status === VaultSourceStatus.Unlocked) {
-      setSelectedSource(sources[0]);
-    }
-  }, [sources, selectedSource]);
+  const handleSelectSource = useCallback(
+    (index: number) => {
+      if (sources[index].status === VaultSourceStatus.Locked) {
+        sources[index].unlock(Credentials.fromPassword('sallar')).then(() => {
+          console.log('unlocked!', index, sources[index]);
+          setSelectedSourceIndex(index);
+        });
+      } else if (sources[index].status === VaultSourceStatus.Unlocked) {
+        setSelectedSourceIndex(index);
+      }
+    },
+    [sources]
+  );
 
   return (
-    <>
-      {!selectedSource ? (
-        <button onClick={handleClick} style={{ marginTop: 100 }}>
-          test
+    <Wrapper>
+      <TemporarySidebar>
+        {sources.map((source, index) => (
+          <button onClick={() => handleSelectSource(index)} key={index}>
+            Unlock {source.name}
+          </button>
+        ))}
+        <hr />
+        <button onClick={handleTestAddButtonClick} style={{ marginTop: 100 }}>
+          Add Test Source
         </button>
-      ) : (
-        <Vault source={selectedSource} />
+      </TemporarySidebar>
+      {selectedSourceIndex !== undefined && (
+        <Vault source={sources[selectedSourceIndex]} />
       )}
-    </>
+    </Wrapper>
   );
 };
 

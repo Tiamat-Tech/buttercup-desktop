@@ -54,6 +54,8 @@ const installExtensions = async () => {
   }
 };
 
+// app.disableHardwareAcceleration();
+
 // In case user tries to open a file using Buttercup (on Mac)
 app.on('open-file', (e, filePath) => {
   e.preventDefault();
