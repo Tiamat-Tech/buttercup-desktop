@@ -7,7 +7,7 @@ import {
   VaultFacade,
   VaultSource
 } from 'buttercup/web';
-import React, { useCallback } from 'react';
+import React, { useCallback, useRef } from 'react';
 
 function createArchiveFacade(vault: Vault) {
   return JSON.parse(JSON.stringify(createVaultFacade(vault)));
@@ -24,19 +24,19 @@ interface VaultProps {
 }
 
 const AppVault: React.FunctionComponent<VaultProps> = ({ source }) => {
-  const facade = createArchiveFacade(source.vault);
+  const facadeRef = useRef(createArchiveFacade(source.vault));
 
-  const handleSaveSource = useCallback((facade: VaultFacade) => {
-    // @TODO: PERRY- how to save this back to archive?
-    console.log('Saving vault...', processVaultUpdate(source.vault, facade));
-    // source.something?
+  const handleSaveSource = useCallback(async (facade: VaultFacade) => {
+    facadeRef.current = processVaultUpdate(source.vault, facade);
+    await source.save();
+    console.log("Source saved");
   }, []);
 
   return (
     <VaultProvider
       icons
       iconsPath="../resources/icons"
-      vault={facade}
+      vault={facadeRef.current}
       onUpdate={handleSaveSource}
     >
       <VaultUI />
