@@ -21,10 +21,13 @@ interface AddVaultPayload {
 }
 
 export enum DatasourceType {
+  Dropbox = 'dropbox',
   File = 'file',
+  GoogleDrive = 'googledrive',
   MyButtercup = 'mybuttercup',
   Memory = 'memory',
-  LocalStorage = 'localstorage'
+  LocalStorage = 'localstorage',
+  WebDAV = 'webdav'
 }
 
 interface VaultManagerContextType {
@@ -69,13 +72,9 @@ const VaultManager: React.FunctionComponent = ({ children }) => {
       const credStr = await creds.toSecureString();
       source = new VaultSource(name, type, credStr);
       await manager.addSource(source);
-      if (initialise) {
-        await source.unlock(creds, {
-          initialiseRemote: true
-        });
-      } else {
-        await source.unlock(creds);
-      }
+      await source.unlock(creds, {
+        initialiseRemote: initialise
+      });
     } else if (type === DatasourceType.LocalStorage) {
       const creds = Credentials.fromDatasource(
         {
@@ -87,23 +86,43 @@ const VaultManager: React.FunctionComponent = ({ children }) => {
       const credStr = await creds.toSecureString();
       source = new VaultSource(name, type, credStr);
       await manager.addSource(source);
-      if (initialise) {
-        await source.unlock(creds, {
-          initialiseRemote: true
-        });
-      } else {
-        await source.unlock(creds);
-      }
+      await source.unlock(creds, {
+        initialiseRemote: initialise
+      });
+    } else if (type === DatasourceType.WebDAV) {
+      const creds = Credentials.fromDatasource(
+        {
+          type,
+          endpoint: "https://webdav.yandex.ru",
+          path: "/test-desktop.bcup",
+          username: "",
+          password: ""
+        },
+        masterPassword
+      );
+      const credStr = await creds.toSecureString();
+      source = new VaultSource(name, type, credStr);
+      await manager.addSource(source);
+      await source.unlock(creds, {
+        initialiseRemote: initialise
+      });
     } else {
       throw new Error(`Invalid datasource type: ${type}`);
     }
     return source;
   }, []);
 
+  const removeAllSources = useCallback(async () => {
+    for (const source of manager.sources) {
+      await manager.removeSource(source.id);
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       sources,
-      addSource
+      addSource,
+      removeAllSources
     }),
     [sources]
   );

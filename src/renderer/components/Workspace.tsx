@@ -17,12 +17,20 @@ const Wrapper = styled.div`
 
 const Workspace = () => {
   const [selectedSourceIndex, setSelectedSourceIndex] = useState<number>();
-  const { sources, addSource } = useManager();
+  const { sources, addSource, removeAllSources } = useManager();
 
-  const handleTestAddButtonClick = () => {
+  const handleLocalTestSourceClick = () => {
     addSource({
       type: DatasourceType.LocalStorage,
       name: 'Sallar',
+      initialise: true,
+      masterPassword: 'sallar'
+    });
+  };
+  const handleWebDAVTestSourceClick = () => {
+    addSource({
+      type: DatasourceType.WebDAV,
+      name: 'Webby',
       initialise: true,
       masterPassword: 'sallar'
     });
@@ -51,8 +59,14 @@ const Workspace = () => {
           </button>
         ))}
         <hr />
-        <button onClick={handleTestAddButtonClick} style={{ marginTop: 100 }}>
-          Add Test Source
+        <button onClick={handleLocalTestSourceClick} style={{ marginTop: 100 }}>
+          Add Local Test Source
+        </button>
+        <button onClick={handleWebDAVTestSourceClick} style={{ marginTop: 0 }}>
+          Add WebDAV Test Source
+        </button>
+        <button onClick={removeAllSources} style={{ marginTop: 150 }}>
+          Remove All Sources
         </button>
       </TemporarySidebar>
       {selectedSourceIndex !== undefined && (
